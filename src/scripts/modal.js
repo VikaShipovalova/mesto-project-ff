@@ -8,7 +8,7 @@ function escClose(evt) {
 export function openModal(popup) {
     popup.classList.add('popup_is-animated');
     popup.classList.add('popup_is-opened');
-    document.addEventListener('keydown', escClose);
+    document.addEventListener('keydown', escClose); 
 };
 
 export function closeModal(popup) { 
