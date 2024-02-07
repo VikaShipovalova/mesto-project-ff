@@ -6,14 +6,14 @@ const popupWithImg = document.querySelector(".popup_type_image");
 const popupImg = popupWithImg.querySelector(".popup__image");
 const popupDescription = popupWithImg.querySelector(".popup__caption");
 
-function createCard(cardInfo, funcDelete, popupForImage, likeCard, userId) {
+function createCard(cardInfo, funcDelete, openPopup, likeCard, userId) {
   const newCard = cardTemplate.querySelector(".card").cloneNode(true);
   const cardImg = newCard.querySelector(".card__image");
 
   cardImg.src = cardInfo.link;
   cardImg.alt = cardInfo.name;
   newCard.querySelector(".card__title").textContent = cardInfo.name;
-  cardImg.addEventListener("click", popupForImage);
+  cardImg.addEventListener("click", openPopup);
 
   const likeQuantity = newCard.querySelector(".likes");
   likeQuantity.textContent = cardInfo.likes.length;
@@ -29,9 +29,9 @@ function createCard(cardInfo, funcDelete, popupForImage, likeCard, userId) {
   likeButton.addEventListener("click", () =>
     likeCard(likeButton, likeQuantity, cardInfo, userId)
   );
-  
+
   deleteButton.addEventListener("click", () =>
-    deleteCard(deleteButton, cardInfo)
+    funcDelete(deleteButton, cardInfo)
   );
   if (cardInfo.owner._id !== userId) {
     deleteButton.classList.add("card__delete-button_hidden");
@@ -40,9 +40,13 @@ function createCard(cardInfo, funcDelete, popupForImage, likeCard, userId) {
 }
 
 function deleteCard(button, cardInfo) {
-  deleteCardApi(cardInfo._id).then((res) => {
-    button.closest(".card").remove();
-  });
+  deleteCardApi(cardInfo._id)
+    .then((res) => {
+      button.closest(".card").remove();
+    })
+    .catch((error) => {
+      console.log(`Ошибка при удалении карточки: ${error.message}`);
+    });
 }
 
 function likeCard(button, likeQuantity, cardInfo, userId) {
@@ -67,7 +71,7 @@ function likeCard(button, likeQuantity, cardInfo, userId) {
   }
 }
 
-function popupForImage(evt) {
+function openPopupForImage(evt) {
   const image = evt.target;
   popupImg.src = image.src;
   popupImg.alt = image.alt;
@@ -75,4 +79,4 @@ function popupForImage(evt) {
   openModal(popupWithImg);
 }
 
-export { createCard, deleteCard, popupForImage, likeCard };
+export { createCard, deleteCard, openPopupForImage, likeCard };

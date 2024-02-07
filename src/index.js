@@ -10,27 +10,28 @@ import {
   popupAddCard,
   popupEditAvatar,
   popupClosers,
-  popupOverlay,
+  overlayPopups,
   formEdit,
   nameInput,
   jobInput,
   formEditButton,
-  formPlace,
-  placeInput,
-  linkPlaceInput,
+  formAddCard,
+  newPlaceName,
+  newPlaceLink,
   formAvatar,
   avatarInput,
   formAvatarButton,
+  placeAddButton,
 } from "./scripts/constant.js";
 import { initialCards } from "./scripts/cards.js";
 import {
   createCard,
   deleteCard,
-  popupForImage,
+  openPopupForImage,
   likeCard,
 } from "./scripts/card.js";
 
-import { closeModal, openModal, closeOverlay } from "./scripts/modal.js";
+import { closeModal, openModal } from "./scripts/modal.js";
 
 import {
   validationConfig,
@@ -50,9 +51,6 @@ const profileTitle = document.querySelector(".profile__title");
 const profileDescription = document.querySelector(".profile__description");
 
 let userId = 1;
-const formAddCard = document.forms["new-place"];
-const newPlaceName = formAddCard.elements["place-name"];
-const newLink = formAddCard.elements.link;
 
 Promise.all([getUserInfo(), getBaseCards()])
   .then(([userInfo, cards]) => {
@@ -64,7 +62,7 @@ Promise.all([getUserInfo(), getBaseCards()])
       const cardItem = createCard(
         cardInfo,
         deleteCard,
-        popupForImage,
+        openPopupForImage,
         likeCard,
         userId
       );
@@ -81,17 +79,18 @@ function editProfile(evt) {
     name: nameInput.value,
     about: jobInput.value,
   };
-  const parentPopup = evt.target.closest(".popup");
   formEditButton.textContent = "Сохранение...";
   editProfileInfo(newInfo)
     .then((newInfo) => {
       profileTitle.textContent = newInfo.name;
       profileDescription.textContent = newInfo.about;
-      formEditButton.textContent = "Сохранить";
-      closeModal(parentPopup);
+      closeModal(popupEdit);
     })
     .catch((error) => {
       console.log("Ошибка при сохранении данных пользователя", error);
+    })
+    .finally(() => {
+      formEditButton.textContent = "Сохранить";
     });
 }
 
@@ -102,17 +101,21 @@ function editAvatar(evt) {
   editProfileAvatar(avatar)
     .then((newAvatar) => {
       profileImage.style.backgroundImage = `url(${newAvatar.avatar})`;
-      formAvatarButton.textContent = "Сохранить";
       closeModal(popupEditAvatar);
     })
     .catch((error) => {
       console.log(`Ошибка при сохранении аватара: ${error.message}`);
+    })
+    .finally(() => {
+      formAvatarButton.textContent = "Сохранить";
     });
 }
 
 enableValidation(validationConfig);
+
 formEdit.addEventListener("submit", editProfile);
-formAvatarButton.addEventListener("click", editAvatar);
+
+formAvatar.addEventListener("submit", editAvatar);
 
 profileAvatarButton.addEventListener("click", function () {
   clearValidation(popupEditAvatar, validationConfig);
@@ -123,38 +126,41 @@ function addNewCard(evt) {
   evt.preventDefault();
   const cardInfo = {
     name: newPlaceName.value,
-    link: newLink.value,
+    link: newPlaceLink.value,
   };
-  const parentPopup = evt.target.closest(".popup");
+  placeAddButton.textContent = "Сохранение...";
   appendNewCard(cardInfo, userId)
     .then((cardInfo) => {
       const cardItem = createCard(
         cardInfo,
         deleteCard,
-        popupForImage,
+        openPopupForImage,
         likeCard,
         userId
       );
       cardsList.prepend(cardItem);
-      closeModal(parentPopup);
+      closeModal(popupAddCard);
       newPlaceName.value = "";
-      newLink.value = "";
+      newPlaceLink.value = "";
     })
     .catch((error) => {
       console.log("Ошибка при добавлении карточки", error);
+    })
+    .finally(() => {
+      placeAddButton.textContent = "Сохранить";
     });
 }
 
 formAddCard.addEventListener("submit", addNewCard);
 
-function startvalueEditForm() {
+function openProfilePopup() {
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDescription.textContent;
   clearValidation(popupEdit, validationConfig);
   openModal(popupEdit);
 }
 
-editButton.addEventListener("click", startvalueEditForm);
+editButton.addEventListener("click", openProfilePopup);
 
 addCardButton.addEventListener("click", function () {
   clearValidation(popupAddCard, validationConfig);
@@ -166,8 +172,4 @@ popupClosers.forEach((closeButton) => {
     const parentPopup = closeButton.target.closest(".popup");
     closeModal(parentPopup);
   });
-});
-
-popupOverlay.forEach((evt) => {
-  evt.addEventListener("click", closeOverlay);
 });
