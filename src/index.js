@@ -167,9 +167,16 @@ addCardButton.addEventListener("click", function () {
   openModal(popupAddCard);
 });
 
-popupClosers.forEach((closeButton) => {
+/*popupClosers.forEach((closeButton) => {
   closeButton.addEventListener("click", function (closeButton) {
     const parentPopup = closeButton.target.closest(".popup");
     closeModal(parentPopup);
   });
-});
+});*/
+
+popupClosers.forEach((closeButton) => {
+  const parentPopup = closeButton.closest(".popup");  // 1 раз находим и не тратим ресурсы при каждом клике
+  closeButton.addEventListener("click", () => {
+    closeModal(parentPopup);
+  });
+}); 
